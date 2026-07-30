@@ -1,0 +1,236 @@
+docs/
+
+├── 01_FOUNDATION/
+│   ├── 01_SOFTWARE_DESIGN_SPECIFICATION.md
+│   ├── 02_SYSTEM_VISION.md
+│   ├── 03_ARCHITECTURE_OVERVIEW.md
+│   ├── 04_GLOSSARY.md
+│   ├── 05_REPOSITORY_LAYOUT.md
+│   ├── 06_DEVELOPER_GUIDE.md
+│   ├── 07_PLUGIN_DEVELOPMENT_GUIDE.md
+│   └── 08_DOMAIN_DEVELOPMENT_GUIDE.md
+│
+├── 02_ADR/
+│   ├── ADR-001_EXECUTIVE_CONTROL.md
+│   ├── ADR-002_EVENT_DRIVEN_ARCHITECTURE.md
+│   ├── ADR-003_COGNITIVE_MEMORY.md
+│   ├── ADR-004_CONTEXT_AND_ATTENTION.md
+│   ├── ADR-005_MODULE_INTERFACE.md
+│   ├── ADR-006_DETERMINISTIC_EXECUTION.md
+│   ├── ADR-007_SELF_IMPROVEMENT.md
+│   ├── ADR-008_PLUGIN_ARCHITECTURE.md
+│   ├── ADR-009_DOMAIN_ABSTRACTION.md
+│   └── ADR-010_UNIFIED_ASSISTANT.md
+│
+├── 03_CORE/
+│   ├── CORE-001_EXECUTIVE_MANAGER.md
+│   ├── CORE-002_ADAPTIVE_SCHEDULER.md
+│   ├── CORE-003_EVENT_BUS.md
+│   ├── CORE-004_COGNITIVE_MEMORY_MANAGER.md
+│   ├── CORE-005_WORKING_MEMORY.md
+│   ├── CORE-006_SEMANTIC_MEMORY_SERVICE.md
+│   ├── CORE-007_EPISODIC_MEMORY.md
+│   ├── CORE-008_ATTENTION_MANAGER.md
+│   ├── CORE-009_CONTEXT_MANAGER.md
+│   ├── CORE-010_KNOWLEDGE_BROKER.md
+│   ├── CORE-011_MODULE_INTERFACE.md
+│   └── CORE-012_TELEMETRY.md
+│
+├── 04_SERVICES/
+│   ├── SERVICE-001_REASONING_ENGINE.md
+│   ├── SERVICE-002_PERCEPTION.md
+│   ├── SERVICE-003_SEARCH_ENGINE.md
+│   ├── SERVICE-004_PROGRAM_SYNTHESIS.md
+│   ├── SERVICE-005_VERIFICATION.md
+│   ├── SERVICE-006_META_COGNITION.md
+│   ├── SERVICE-007_LEARNING.md
+│   ├── SERVICE-008_UNIFIED_ASSISTANT.md
+│   ├── SERVICE-009_PLANNING.md
+│   └── SERVICE-010_EXPLANATION.md
+│
+├── 05_APPLICATIONS/
+│   ├── APP-001_ARC.md
+│   ├── APP-002_ROBOTICS.md
+│   ├── APP-003_PLANNING.md
+│   ├── APP-004_MATHEMATICS.md
+│   ├── APP-005_SCIENTIFIC_DISCOVERY.md
+│   └── APP-006_SOFTWARE_ENGINEERING.md
+│
+└── 06_SDK/
+    ├── SDK-001_MODULE_SDK.md
+    ├── SDK-002_PLUGIN_SDK.md
+    ├── SDK-003_MEMORY_SDK.md
+    ├── SDK-004_DOMAIN_SDK.md
+    ├── SDK-005_ASSISTANT_SDK.md
+    └── SDK-006_TESTING_SDK.md
+
+
+
+Phase 5 — Runtime
+
+This becomes the "kernel" of the Cognitive Operating System.
+
+Example:
+
+05_RUNTIME/
+
+RUNTIME-001_SERVICE_REGISTRY.md
+
+RUNTIME-002_DEPENDENCY_INJECTION.md
+
+RUNTIME-003_EVENT_BUS.md
+
+RUNTIME-004_SCHEDULER.md
+
+RUNTIME-005_PIPELINE_ENGINE.md
+
+RUNTIME-006_TASK_MANAGER.md
+
+RUNTIME-007_RESOURCE_MANAGER.md
+
+RUNTIME-008_PLUGIN_MANAGER.md
+
+RUNTIME-009_CONFIGURATION_MANAGER.md
+
+RUNTIME-010_RUNTIME_LIFECYCLE.md
+
+These are implementation independent.
+05_RUNTIME/
+
+RUNTIME-001_SERVICE_REGISTRY.md
+RUNTIME-002_DEPENDENCY_INJECTION.md
+RUNTIME-003_EVENT_BUS.md
+RUNTIME-004_SCHEDULER.md
+RUNTIME-005_PIPELINE_ENGINE.md
+RUNTIME-006_TASK_MANAGER.md
+RUNTIME-007_RESOURCE_MANAGER.md
+RUNTIME-008_PLUGIN_MANAGER.md
+RUNTIME-009_CONFIGURATION_MANAGER.md
+RUNTIME-010_RUNTIME_LIFECYCLE.md
+
+Phase 6 — Execution
+
+Then define how cognition actually executes.
+
+06_EXECUTION/
+
+EXEC-100_Request_Lifecycle.md
+
+EXEC-110_Reasoning_Pipeline.md
+
+EXEC-120_Planning_Pipeline.md
+
+EXEC-130_Decision_Pipeline.md
+
+EXEC-140_Learning_Pipeline.md
+
+EXEC-150_Meta_Pipeline.md
+
+EXEC-160_Assistant_Pipeline.md
+
+These describe execution flow.
+
+Not algorithms.
+
+Phase 7 — Infrastructure
+
+Then define infrastructure.
+
+07_INFRASTRUCTURE/
+
+INFRA-100_Model_Providers.md
+
+INFRA-110_Vector_Databases.md
+
+INFRA-120_Graph_Databases.md
+
+INFRA-130_Event_Transport.md
+
+INFRA-140_Storage.md
+
+INFRA-150_Observability.md
+
+INFRA-160_Security.md
+
+INFRA-170_Deployment.md
+
+Still implementation independent.
+
+Phase 8 — Applications
+
+Only now do applications appear.
+
+Example:
+
+08_APPLICATIONS/
+
+APP-100_CHAT_AGENT.md
+
+APP-110_CODING_AGENT.md
+
+APP-120_RESEARCH_AGENT.md
+
+APP-130_DOCUMENT_AGENT.md
+
+APP-140_ARC_AGENT.md
+
+APP-150_MULTI_AGENT_SYSTEM.md
+
+Notice something important:
+
+Applications are compositions.
+
+They don't implement reasoning.
+
+They compose capabilities.
+
+Example:
+
+Chat Agent
+
+Assistant
+
+↓
+
+Reasoning
+
+↓
+
+Memory
+
+↓
+
+Planning
+
+↓
+
+Decision
+
+↓
+
+Learning
+Phase 9 — ARC AGI-2
+
+Only after the platform exists do we describe the ARC-specific application.
+
+09_ARC_AGI/
+
+ARC-001_Architecture.md
+
+ARC-002_Cognitive_Loop.md
+
+ARC-003_Object_Model.md
+
+ARC-004_Action_Model.md
+
+ARC-005_Abstraction.md
+
+ARC-006_Generalization.md
+
+ARC-007_Search_Strategy.md
+
+ARC-008_Solution_Verification.md
+
+ARC-009_Learning.md
+
+ARC-010_Evaluation.md
