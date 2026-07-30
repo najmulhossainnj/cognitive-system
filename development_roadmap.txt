@@ -1,0 +1,592 @@
+# COS Agentic Development Roadmap
+
+## Overview
+
+The Cognitive Operating System will be implemented through a sequence of structured development phases.
+
+Each phase has:
+
+- Goal
+- Inputs
+- Outputs
+- Deliverables
+- Acceptance Criteria
+- Prompt Template
+
+The coding agent should never skip phases.
+
+---
+
+# Phase 0 — Repository Foundation
+
+## Goal
+
+Create the complete project structure without implementing business logic.
+
+## Inputs
+
+- All Architecture Specifications
+
+## Deliverables
+
+- Repository structure
+- Package layout
+- Build system
+- Dependency management
+- Tooling
+- CI configuration
+- Coding standards
+
+## Output
+
+```
+cos/
+
+docs/
+
+runtime/
+
+services/
+
+pipelines/
+
+applications/
+
+shared/
+
+tests/
+
+examples/
+```
+
+## Acceptance Criteria
+
+Repository builds successfully.
+
+No implementation required.
+
+---
+
+## Prompt
+
+You are implementing the Cognitive Operating System.
+
+Read every architecture document.
+
+Create the complete repository structure.
+
+Do not implement business logic.
+
+Generate:
+
+- directory tree
+- pyproject.toml
+- linting
+- formatting
+- testing
+- CI
+- package layout
+- dependency graph
+
+Every directory must match the architecture.
+
+---
+
+# Phase 1 — Architecture Skeleton
+
+## Goal
+
+Generate every interface.
+
+## Deliverables
+
+Every service exists.
+
+Every interface exists.
+
+Every model exists.
+
+Every configuration exists.
+
+Only TODO implementations.
+
+## Example
+
+```python
+class WorkingMemoryService:
+
+    async def store(self, item):
+        raise NotImplementedError
+```
+
+## Acceptance
+
+Entire project imports successfully.
+
+No circular imports.
+
+---
+
+## Prompt
+
+Implement the entire architecture skeleton.
+
+Generate:
+
+- interfaces
+
+- models
+
+- configs
+
+- dependency injection
+
+- service registration
+
+Do not implement functionality.
+
+Every method should raise NotImplementedError.
+
+---
+
+# Phase 2 — Runtime
+
+## Goal
+
+Implement runtime infrastructure.
+
+## Includes
+
+Service Registry
+
+Dependency Injection
+
+Configuration
+
+Event Bus
+
+Scheduler
+
+Task Manager
+
+Pipeline Engine
+
+Lifecycle
+
+## Acceptance
+
+Services register automatically.
+
+Pipelines execute.
+
+---
+
+## Prompt
+
+Implement all Runtime components.
+
+Follow every Runtime specification.
+
+Write:
+
+- production code
+
+- tests
+
+- documentation
+
+- examples
+
+No Cognitive Services yet.
+
+---
+
+# Phase 3 — Shared Models
+
+## Goal
+
+Implement common data models.
+
+## Includes
+
+Request
+
+Response
+
+Context
+
+Event
+
+Task
+
+Plan
+
+Constraint
+
+Observation
+
+Decision
+
+Memory
+
+Knowledge
+
+## Acceptance
+
+Every service uses these models.
+
+---
+
+## Prompt
+
+Implement every shared model using Pydantic.
+
+Include:
+
+validation
+
+serialization
+
+JSON schema
+
+unit tests
+
+documentation
+
+---
+
+# Phase 4 — Core Memory
+
+## Includes
+
+Working Memory
+
+Semantic Memory
+
+Episodic Memory
+
+Memory Consolidation
+
+## Acceptance
+
+Memory can store and retrieve objects.
+
+---
+
+## Prompt
+
+Implement all Memory Services.
+
+Follow architecture exactly.
+
+Include:
+
+tests
+
+benchmarks
+
+examples
+
+---
+
+# Phase 5 — World Model
+
+## Includes
+
+Knowledge Graph
+
+Semantic Query
+
+Constraint Validation
+
+Pattern Matching
+
+## Acceptance
+
+Knowledge Graph operational.
+
+Pattern matching passes tests.
+
+---
+
+## Prompt
+
+Implement every World Model service.
+
+Graph must remain provider independent.
+
+---
+
+# Phase 6 — Reasoning
+
+## Includes
+
+Rule
+
+Symbolic
+
+LLM
+
+Probabilistic
+
+Hybrid
+
+## Acceptance
+
+Reasoning pipeline executes.
+
+---
+
+## Prompt
+
+Implement every reasoning service.
+
+Keep interfaces stable.
+
+Use pluggable providers.
+
+---
+
+# Phase 7 — Planning
+
+Implement
+
+HTN
+
+Graph
+
+Constraint
+
+Planner
+
+Acceptance:
+
+Plans execute correctly.
+
+---
+
+# Phase 8 — Decision
+
+Implement
+
+Utility
+
+Policy
+
+Risk
+
+Acceptance:
+
+Decision engine selects optimal action.
+
+---
+
+# Phase 9 — Learning
+
+Implement
+
+Experience
+
+Heuristic
+
+Policy
+
+Acceptance:
+
+Learning updates memory.
+
+---
+
+# Phase 10 — Meta Cognition
+
+Implement
+
+Reflection
+
+Confidence
+
+Acceptance:
+
+Reflection loops execute.
+
+---
+
+# Phase 11 — Assistant
+
+Implement
+
+Assistant
+
+Explanation
+
+Trace Visualization
+
+Acceptance:
+
+Explain every execution.
+
+---
+
+# Phase 12 — Infrastructure
+
+Implement
+
+Storage
+
+Vector DB
+
+Graph DB
+
+Models
+
+Observability
+
+Security
+
+Deployment
+
+Acceptance:
+
+Everything configurable.
+
+---
+
+# Phase 13 — Applications
+
+Implement
+
+Chat
+
+Coding
+
+Research
+
+Document
+
+ARC
+
+Multi-Agent
+
+Acceptance:
+
+Applications compile.
+
+---
+
+# Phase 14 — ARC Integration
+
+## Goal
+
+Connect ARC Agent.
+
+## Includes
+
+JSON parser
+
+Grid model
+
+Object extraction
+
+Execution pipeline
+
+Prediction
+
+## Acceptance
+
+Single ARC task solved.
+
+---
+
+## Prompt
+
+Implement APP-140.
+
+Read ARC JSON.
+
+Produce COS Request.
+
+Execute pipeline.
+
+Return predicted grid.
+
+---
+
+# Phase 15 — ARC Solver
+
+Implement
+
+Object detection
+
+Transformations
+
+Rule induction
+
+Planning
+
+Validation
+
+Acceptance
+
+Solve easy ARC tasks.
+
+---
+
+# Phase 16 — Learning Loop
+
+Implement
+
+Experience replay
+
+Heuristics
+
+Knowledge graph updates
+
+Memory consolidation
+
+Acceptance
+
+Performance improves over time.
+
+---
+
+# Phase 17 — Optimization
+
+Implement
+
+Parallel reasoning
+
+Caching
+
+Distributed execution
+
+GPU acceleration
+
+Batch planning
+
+Acceptance
+
+Benchmark improvements.
+
+---
+
+# Phase 18 — Production
+
+Implement
+
+Monitoring
+
+Metrics
+
+Tracing
+
+Logging
+
+Deployment
+
+HA
+
+Recovery
+
+Acceptance
+
+Production ready.
