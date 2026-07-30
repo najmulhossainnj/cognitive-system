@@ -1,0 +1,565 @@
+# ARC-AGI-2 Dataset Integration into the Cognitive Operating System (COS)
+
+## Overview
+
+The Cognitive Operating System (COS) is designed as a **general-purpose cognitive operating system**, while the **ARC-AGI-2 dataset** is simply one application-specific input. The dataset is **not embedded into the OS**; instead, it is processed by the **APP-140 ARC Agent**, which converts each ARC task into a standardized COS request executed through the Runtime, Execution Pipelines, and Cognitive Services.
+
+Conceptually:
+
+```text
+COS = Cognitive Operating System
+
+APP-140 = ARC Agent Application
+
+ARC-AGI-2 = Input Dataset
+```
+
+The ARC Agent acts as the bridge between the benchmark dataset and the cognitive architecture.
+
+---
+
+# End-to-End Processing Pipeline
+
+```text
+ARC-AGI-2 JSON Task
+
+        │
+
+        ▼
+
+APP-140 ARC Agent
+
+        │
+
+        ▼
+
+EXEC-100 Request Lifecycle
+
+        │
+
+        ▼
+
+EXEC-110 Reasoning Pipeline
+
+        │
+
+        ▼
+
+Planning Pipeline
+
+        │
+
+        ▼
+
+Decision Pipeline
+
+        │
+
+        ▼
+
+Learning Pipeline
+
+        │
+
+        ▼
+
+Assistant Pipeline
+
+        │
+
+        ▼
+
+Predicted Output Grid
+```
+
+---
+
+# Step 1 — Load the ARC Task
+
+An ARC-AGI-2 task is represented as JSON containing training examples and one or more test inputs.
+
+Example:
+
+```json
+{
+  "train": [
+    {
+      "input": [[1,0,0],[1,1,0]],
+      "output": [[0,1,1],[0,0,1]]
+    }
+  ],
+  "test": [
+    {
+      "input": [[...]]
+    }
+  ]
+}
+```
+
+The application loads the task into an internal representation:
+
+```text
+Task
+ ├── Training Examples
+ ├── Test Input
+ └── Metadata
+```
+
+At this stage, no reasoning has occurred.
+
+---
+
+# Step 2 — Create a Standard COS Request
+
+The ARC Agent converts the dataset into a normalized request understood by the Cognitive Operating System.
+
+Example:
+
+```text
+Goal:
+Solve ARC task
+
+Inputs:
+- Training pairs
+- Test input
+
+Constraints:
+Generalize transformation
+
+Context:
+Empty
+```
+
+From this point onward, the ARC benchmark becomes an ordinary COS execution request.
+
+---
+
+# Step 3 — Initialize Working Memory
+
+The Working Memory Service stores the active problem state.
+
+```text
+Working Memory
+
+├── Current Task
+├── Training Examples
+├── Test Grid
+├── Candidate Hypotheses
+├── Search State
+└── Execution Context
+```
+
+Working Memory functions as the system's temporary cognitive workspace.
+
+---
+
+# Step 4 — Perception and Grid Interpretation
+
+The raw grid is transformed into symbolic representations.
+
+Example input:
+
+```text
+1 0 0
+1 1 0
+```
+
+becomes:
+
+```text
+Objects
+
+Colors
+
+Bounding Boxes
+
+Connected Components
+
+Shapes
+
+Sizes
+
+Coordinates
+
+Neighbor Relationships
+
+Symmetry
+```
+
+Primary services involved:
+
+- Pattern Matching Service
+- Knowledge Graph Service
+- Semantic Query Service
+
+The LLM has not yet begun reasoning.
+
+---
+
+# Step 5 — Knowledge Graph Construction
+
+Perceptual information is converted into symbolic facts.
+
+Example:
+
+```text
+Object A
+
+Color = Blue
+
+Cells = 5
+
+Bounding Box = (2,4)
+
+Touches Border
+
+Connected
+
+Rectangle
+```
+
+This symbolic world model becomes the foundation for reasoning.
+
+---
+
+# Step 6 — Pattern Discovery
+
+The Pattern Matching Service searches for candidate transformations.
+
+Examples include:
+
+```text
+Translation
+
+Reflection
+
+Rotation
+
+Scaling
+
+Mirror
+
+Copy
+
+Delete
+
+Merge
+
+Split
+
+Repeat
+
+Flood Fill
+
+Symmetry
+```
+
+Each detected possibility becomes a candidate hypothesis.
+
+```text
+Hypothesis #1
+
+Hypothesis #2
+
+Hypothesis #3
+```
+
+---
+
+# Step 7 — Reasoning Pipeline
+
+Multiple reasoning engines operate over the symbolic representation.
+
+```text
+Rule-Based Reasoner
+
+↓
+
+Symbolic Reasoner
+
+↓
+
+LLM Reasoner
+
+↓
+
+Probabilistic Reasoner
+
+↓
+
+Hybrid Reasoner
+```
+
+Each engine proposes candidate transformation rules such as:
+
+```text
+Rotate object
+
+Mirror horizontally
+
+Invert colors
+
+Duplicate object
+
+Move largest shape
+```
+
+These rules are forwarded to planning.
+
+---
+
+# Step 8 — Planning
+
+Planning determines how each candidate rule should be evaluated.
+
+Instead of asking:
+
+> "What is the answer?"
+
+the planner asks:
+
+> "How can this rule be tested?"
+
+Workflow:
+
+```text
+Candidate Rule
+
+↓
+
+Execution Plan
+
+↓
+
+Apply Rule
+
+↓
+
+Compare Results
+
+↓
+
+Accept or Reject
+```
+
+---
+
+# Step 9 — Constraint Validation
+
+Each candidate transformation is verified against every training example.
+
+Example:
+
+```text
+Training Example 1
+
+PASS
+
+Training Example 2
+
+PASS
+
+Training Example 3
+
+FAIL
+```
+
+Any rule that fails validation is discarded.
+
+---
+
+# Step 10 — Decision Engine
+
+The Decision Pipeline evaluates remaining hypotheses.
+
+Example:
+
+```text
+Rule A
+
+Confidence = 0.91
+
+Rule B
+
+Confidence = 0.42
+
+Rule C
+
+Confidence = 0.77
+```
+
+Utility functions, confidence estimation, policies, and risk assessment select the strongest candidate.
+
+---
+
+# Step 11 — Reflection
+
+Before finalizing the solution, the Meta-Cognition Pipeline performs reflective evaluation.
+
+Typical questions include:
+
+```text
+Could another rule explain all examples?
+
+Did we overfit?
+
+Did we memorize instead of generalize?
+
+Were any constraints ignored?
+
+Can confidence be improved?
+```
+
+If necessary, execution loops back into the reasoning and planning pipelines.
+
+---
+
+# Step 12 — Learning
+
+Once a task is completed, learning services update long-term knowledge.
+
+Examples of stored knowledge include:
+
+```text
+Transformation Pattern
+
+Successful Rule
+
+Failed Rule
+
+Planning Strategy
+
+Useful Heuristic
+
+Reflection Outcome
+
+Confidence Score
+```
+
+This information is stored in:
+
+- Semantic Memory
+- Knowledge Graph
+- Heuristic Library
+- Policy Learning
+- Experience Learning
+
+Future tasks can benefit from accumulated experience without memorizing benchmark answers.
+
+---
+
+# Step 13 — Solve the Test Input
+
+Only after a transformation successfully explains every training example is it applied to the unseen test input.
+
+```text
+Test Input
+
+↓
+
+Apply Learned Transformation
+
+↓
+
+Generate Output Grid
+```
+
+The generated grid becomes the predicted solution submitted by the ARC Agent.
+
+---
+
+# Internal Execution Graph
+
+The complete execution flow inside the Cognitive Operating System is:
+
+```text
+ARC JSON Task
+
+↓
+
+APP-140 ARC Agent
+
+↓
+
+Task Manager
+
+↓
+
+Working Memory
+
+↓
+
+Grid Interpreter
+
+↓
+
+Pattern Matching
+
+↓
+
+Knowledge Graph
+
+↓
+
+Reasoning Pipeline
+
+↓
+
+Planning Pipeline
+
+↓
+
+Constraint Validation
+
+↓
+
+Decision Engine
+
+↓
+
+Reflection
+
+↓
+
+Learning
+
+↓
+
+Assistant Pipeline
+
+↓
+
+Predicted Output Grid
+```
+
+---
+
+# Mapping ARC-AGI-2 to the COS Architecture
+
+| COS Layer | Responsibility |
+|------------|----------------|
+| **ARC-AGI-2 Dataset** | Provides JSON-based benchmark tasks |
+| **APP-140 ARC Agent** | Converts tasks into standardized COS requests and coordinates execution |
+| **Execution Pipelines** | Manage reasoning, planning, decision-making, learning, meta-cognition, and explanation |
+| **Cognitive Services** | Perform perception, memory, reasoning, planning, validation, reflection, and learning |
+| **Runtime Layer** | Provides scheduling, lifecycle management, dependency injection, event handling, configuration, and resources |
+| **Infrastructure Layer** | Supplies models, storage, graph databases, vector databases, observability, security, deployment, and transport |
+
+---
+
+# Architectural Significance
+
+A key design principle of the Cognitive Operating System is the separation between **applications** and **cognitive infrastructure**.
+
+The ARC-AGI-2 benchmark is only one possible application input. Because all cognition is implemented within standardized Runtime components, Execution Pipelines, and Cognitive Services, the same architecture can support multiple intelligent applications without modification.
+
+Examples include:
+
+- APP-100 — Chat Agent
+- APP-110 — Coding Agent
+- APP-120 — Research Agent
+- APP-130 — Document Agent
+- APP-140 — ARC Agent
+- APP-150 — Multi-Agent System
+
+In each case, only the application layer changes. The underlying Cognitive Operating System remains identical, demonstrating that COS functions as a reusable, domain-independent cognitive platform rather than a benchmark-specific solution.
