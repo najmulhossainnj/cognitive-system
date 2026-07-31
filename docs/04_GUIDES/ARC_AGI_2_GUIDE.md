@@ -1,15 +1,16 @@
 # ARC-AGI-2 Guide
 
-This guide explains how to use the Cognitive Operating System (COS) to solve ARC-AGI-2 benchmark tasks using the APP-140 ARC Agent.
+This guide explains how to use the Cognitive Operating System (COS) to solve ARC-AGI-2 benchmark tasks using the APP-140 ARC Agent with automatic memory-based learning.
 
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Adding Data](#adding-data)
-3. [Running Training](#running-training)
-4. [Using the ARC Agent](#using-the-arc-agent)
-5. [API Reference](#api-reference)
-6. [Examples](#examples)
+2. [Memory Architecture](#memory-architecture)
+3. [Adding Data](#adding-data)
+4. [Automatic Learning](#automatic-learning)
+5. [Using the ARC Agent](#using-the-arc-agent)
+6. [API Reference](#api-reference)
+7. [Examples](#examples)
 
 ---
 
@@ -20,6 +21,39 @@ The ARC-AGI-2 benchmark consists of grid transformation tasks. Each task contain
 - **Training Examples**: Input-output grid pairs that demonstrate the transformation rule
 - **Test Input**: A new input grid that needs to be transformed
 - **Expected Output**: The correct output grid (used for evaluation)
+
+**Key Feature**: The ARC Agent automatically learns from experience using COS memory services - no explicit training required!
+
+---
+
+## Memory Architecture
+
+The ARC Agent integrates with COS's multi-memory system for automatic experience-based learning:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      ARC Agent (APP-140)                        │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        ▼                     ▼                     ▼
+┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+│   Working     │   │   Semantic    │   │   Episodic    │
+│   Memory      │   │   Memory      │   │   Memory      │
+├───────────────┤   ├───────────────┤   ├───────────────┤
+│ • Task State  │   │ • Patterns    │   │ • Experiences │
+│ • Current     │   │ • Concepts    │   │ • Episodes    │
+│   Grids       │   │ • Heuristics │   │ • History     │
+└───────────────┘   └───────────────┘   └───────────────┘
+```
+
+### Memory Types
+
+| Memory Type | Purpose | Contents |
+|-------------|---------|----------|
+| **WorkingMemory** | Active task processing | Current task state, grid data |
+| **SemanticMemory** | Persistent learned knowledge | Transformation patterns, rules |
+| **EpisodicMemory** | Past experiences | Solving episodes, successes/failures |
 
 ---
 
@@ -134,15 +168,103 @@ Example `task_001.json`:
 
 ---
 
-## Running Training
+## Automatic Learning
+
+The ARC Agent **automatically learns** from experience - no explicit training required!
+
+### How It Works
+
+```
+Task 1 → Solve → Success (confidence >= 0.5) → Store Pattern in Semantic Memory
+                                                 Record in Episodic Memory
+
+Task 2 → Check Memory → Found Pattern → Use Experience → Solve Faster/Better
+```
+
+### Learning Process
+
+1. **Solve Task**: Agent solves the task using training examples
+2. **Evaluate Success**: If confidence >= 0.5, the solution is considered successful
+3. **Store Pattern**: Successful transformation patterns are stored in Semantic Memory
+4. **Record Episode**: The solving experience is recorded in Episodic Memory
+5. **Future Benefit**: Similar tasks can leverage learned patterns
+
+### Memory Query
+
+Before solving each task, the agent checks Semantic Memory for similar patterns:
+
+```python
+# The agent automatically queries memory for relevant patterns
+learned_patterns = await agent._check_memory_for_patterns(task)
+if learned_patterns:
+    solution.learned_from_memory = True
+```
+
+### Viewing Learned Knowledge
+
+```python
+# Get all learned patterns
+patterns = await agent.get_learned_patterns()
+
+# Get past experiences
+experiences = await agent.get_solving_experiences()
+
+# Get memory statistics
+stats = await agent.get_memory_stats()
+# Returns: learned_patterns, total_experiences, success_rate, etc.
+```
+
+### Example: Automatic Learning Flow
+
+```python
+from cos.apps.arc_agent import ARCAgent
+import asyncio
+
+async def automatic_learning_demo():
+    agent = ARCAgent()
+    
+    # Task 1: First time - no prior knowledge
+    task1 = {
+        "train": [{"input": [[1, 0]], "output": [[0, 1]]}],
+        "test": [{"input": [[2, 0]]}]
+    }
+    solution1 = await agent.solve(agent.load_task(task1))
+    print(f"Task 1 confidence: {solution1.confidence}")
+    
+    # Task 2: Agent checks memory and finds patterns
+    task2 = {
+        "train": [{"input": [[3, 0]], "output": [[0, 3]]}],
+        "test": [{"input": [[4, 0]]}]
+    }
+    solution2 = await agent.solve(agent.load_task(task2))
+    print(f"Learned from memory: {solution2.learned_from_memory}")
+    
+    # Check what was learned
+    stats = await agent.get_memory_stats()
+    print(f"Learned patterns: {stats['learned_patterns']}")
+    print(f"Total experiences: {stats['total_experiences']}")
+
+asyncio.run(automatic_learning_demo())
+```
+
+### Benefits of Automatic Learning
+
+| Benefit | Description |
+|---------|-------------|
+| **No Retraining** | System learns automatically from solving tasks |
+| **Pattern Reuse** | Similar tasks benefit from past solutions |
+| **Experience Accumulation** | Performance improves over time |
+| **Cross-Task Learning** | Patterns learned in one task help others |
+
+---
+
+## Running Training (Legacy)
+
+> **Note**: Explicit training is no longer required. The system learns automatically from solving tasks.
+
+For backward compatibility, you can still use explicit training:
 
 ### 1. Training Pipeline
-
-```
-Training Examples → Grid Interpretation → Pattern Discovery → Rule Generation → Best Rule
-```
-
-### 2. Running Training
 
 ```python
 from cos.apps.arc_agent import ARCAgent
@@ -215,6 +337,7 @@ async def basic_usage():
     
     print(f"Output grid: {solution.output_grid}")
     print(f"Confidence: {solution.confidence}")
+    print(f"Learned from memory: {solution.learned_from_memory}")
     print(f"Steps: {solution.reasoning_trace}")
 
 asyncio.run(basic_usage())
@@ -284,12 +407,30 @@ from cos.apps.arc_agent import ARCAgent
 agent = ARCAgent()
 ```
 
+**Constructor with Memory Services:**
+```python
+from cos.services.memory.memory_service import (
+    WorkingMemoryService,
+    SemanticMemoryService,
+    EpisodicMemoryService
+)
+
+agent = ARCAgent(
+    working_memory=WorkingMemoryService(),
+    semantic_memory=SemanticMemoryService(),  # Shared for persistence
+    episodic_memory=EpisodicMemoryService()    # Shared for persistence
+)
+```
+
 | Method | Description |
 |--------|-------------|
 | `load_task(task_data)` | Load an ARC task from JSON |
-| `solve(task)` | Solve an ARC task (async) |
+| `solve(task)` | Solve an ARC task with automatic learning (async) |
 | `solve_batch(tasks)` | Solve multiple tasks (async) |
 | `get_history()` | Get history of solved tasks |
+| `get_learned_patterns()` | Get all learned patterns from semantic memory (async) |
+| `get_solving_experiences(limit)` | Get past solving experiences (async) |
+| `get_memory_stats()` | Get memory statistics (async) |
 
 ### GridInterpreter
 
@@ -331,6 +472,17 @@ discovery = PatternDiscovery()
 | `output_grid` | `list[list[int]]` | Predicted output grid |
 | `confidence` | `float` | Solution confidence (0-1) |
 | `reasoning_trace` | `list[str]` | Steps taken |
+| `learned_from_memory` | `bool` | Whether memory patterns were used |
+
+### Memory Statistics (from get_memory_stats)
+
+| Attribute | Type | Description |
+|-----------|------|-------------|
+| `learned_patterns` | `int` | Number of patterns in semantic memory |
+| `total_experiences` | `int` | Number of recorded episodes |
+| `successful_solutions` | `int` | Number of successful solutions |
+| `average_confidence` | `float` | Average confidence score |
+| `success_rate` | `float` | Ratio of successful solutions |
 
 ### GridSymbolic
 
