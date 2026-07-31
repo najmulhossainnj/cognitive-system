@@ -206,6 +206,40 @@ class ARCSolver:
         self._candidate_rules = candidates
         return candidates
 
+    def _grid_similarity(self, grid1: list[list[int]], grid2: list[list[int]]) -> float:
+        """Calculate similarity between two grids.
+        
+        Args:
+            grid1: First grid
+            grid2: Second grid
+            
+        Returns:
+            Similarity score 0.0 to 1.0
+        """
+        if not grid1 or not grid2:
+            return 0.0
+        
+        # Check dimensions
+        if len(grid1) != len(grid2):
+            # Penalize dimension mismatch
+            dim_similarity = min(len(grid1), len(grid2)) / max(len(grid1), len(grid2))
+            return dim_similarity * 0.5
+        
+        if len(grid1[0]) != len(grid2[0]):
+            dim_similarity = min(len(grid1[0]), len(grid2[0])) / max(len(grid1[0]), len(grid2[0]))
+            return dim_similarity * 0.5
+        
+        # Count matching cells
+        matches = 0
+        total = 0
+        for r1, r2 in zip(grid1, grid2):
+            for c1, c2 in zip(r1, r2):
+                if c1 == c2:
+                    matches += 1
+                total += 1
+        
+        return matches / total if total > 0 else 0.0
+
     async def _validate_candidates(
         self,
         candidates: list[CandidateRule],
@@ -223,28 +257,28 @@ class ARCSolver:
         valid: list[CandidateRule] = []
 
         for candidate in candidates:
-            validations = []
+            similarities = []
             for pair in training_pairs:
                 input_grid = pair["input_raw"]
                 output_grid = pair["output_raw"]
                 predicted = await self._apply_rule(input_grid, candidate)
 
-                # Check if prediction matches expected output
-                matches = predicted == output_grid
-                validations.append(matches)
+                # Calculate similarity score
+                similarity = self._grid_similarity(predicted, output_grid)
+                similarities.append(similarity)
 
-            candidate.valid_training = validations
+            candidate.valid_training = [s > 0.5 for s in similarities]
 
-            # Calculate confidence as ratio of validations
-            if validations:
-                confidence = sum(validations) / len(validations)
+            # Calculate confidence as average similarity
+            if similarities:
+                confidence = sum(similarities) / len(similarities)
                 candidate.confidence = confidence
 
-            # Keep candidates that pass all validations
-            if all(validations):
+            # Keep candidates with similarity > 0.5
+            if any(s > 0.5 for s in similarities):
                 valid.append(candidate)
 
-        # If no candidates pass all, return top candidates by confidence
+        # If no candidates pass, return all sorted by confidence
         if not valid:
             candidates.sort(key=lambda c: c.confidence, reverse=True)
             valid = candidates[:3] if len(candidates) >= 3 else candidates
