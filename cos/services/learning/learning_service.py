@@ -1,129 +1,243 @@
-"""Learning Service Interfaces.
+"""Learning Services Implementation.
 
-This module defines interfaces for learning services.
+This module provides learning services for experience-based improvement.
 """
 
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
-
-from cos.services.base import IService
-
-if TYPE_CHECKING:
-    from cos.shared.models import Dataset, Experience, LearningMetrics
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
 
 
-class ILearningService(IService):
-    """Learning Service interface.
+@dataclass
+class Experience:
+    """Represents a learning experience."""
 
-    Base interface for learning service implementations.
-    Services include: Experience, Heuristic, Policy learning.
+    id: str
+    situation: dict[str, Any]
+    action: dict[str, Any]
+    outcome: dict[str, Any]
+    reward: float = 0.0
+    timestamp: datetime = field(default_factory=datetime.now)
 
-    See SERVICE-600 for base specification.
+
+class LearningService:
+    """Learning Service for experience-based improvement.
+
+    Provides general learning capabilities.
     """
 
-    async def record_experience(self, experience: Experience) -> None:
+    def __init__(self) -> None:
+        """Initialize the learning service."""
+        self._experiences: list[Experience] = []
+        self._models: dict[str, Any] = {}
+
+    async def learn(self, experience: Any) -> dict[str, Any]:
+        """Learn from an experience.
+
+        Args:
+            experience: Experience to learn from
+
+        Returns:
+            Learning result
+        """
+        exp_dict = experience.model_dump() if hasattr(experience, "model_dump") else (
+            experience if isinstance(experience, dict) else {}
+        )
+
+        exp_id = exp_dict.get("id", str(datetime.now().timestamp()))
+        exp = Experience(
+            id=exp_id,
+            situation=exp_dict.get("situation", {}),
+            action=exp_dict.get("action", {}),
+            outcome=exp_dict.get("outcome", {}),
+            reward=exp_dict.get("reward", 0.0),
+        )
+        self._experiences.append(exp)
+
+        return {
+            "experience_id": exp_id,
+            "learned": True,
+            "total_experiences": len(self._experiences),
+        }
+
+    async def recall(self, situation: dict[str, Any]) -> list[Experience]:
+        """Recall similar experiences.
+
+        Args:
+            situation: Situation to recall for
+
+        Returns:
+            Similar experiences
+        """
+        similar = []
+
+        for exp in reversed(self._experiences):
+            if self._similar_situations(situation, exp.situation):
+                similar.append(exp)
+                if len(similar) >= 5:
+                    break
+
+        return similar
+
+    def _similar_situations(self, s1: dict[str, Any], s2: dict[str, Any]) -> bool:
+        """Check if situations are similar."""
+        common_keys = set(s1.keys()) & set(s2.keys())
+        if not common_keys:
+            return False
+
+        matches = sum(1 for k in common_keys if s1.get(k) == s2.get(k))
+        return matches >= len(common_keys) * 0.5
+
+    async def get_insights(self) -> list[str]:
+        """Get learned insights.
+
+        Returns:
+            List of insights
+        """
+        if not self._experiences:
+            return []
+
+        avg_reward = sum(e.reward for e in self._experiences) / len(self._experiences)
+        return [
+            f"Average reward: {avg_reward:.2f}",
+            f"Total experiences: {len(self._experiences)}",
+        ]
+
+
+class ExperienceLearningService:
+    """Experience Learning Service.
+
+    Focuses on learning from past experiences.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the experience learner."""
+        self._experiences: list[Experience] = []
+
+    async def record(
+        self,
+        situation: dict[str, Any],
+        action: dict[str, Any],
+        outcome: dict[str, Any],
+    ) -> str:
         """Record an experience.
 
         Args:
-            experience: Experience to record
-        """
-        raise NotImplementedError("Will be implemented in Phase 9")
+            situation: Observed situation
+            action: Action taken
+            outcome: Resulting outcome
 
-    async def analyze_history(
-        self,
-        experiences: list[Experience],
-    ) -> dict[str, Any]:
-        """Analyze experience history.
+        Returns:
+            Experience ID
+        """
+        exp_id = str(datetime.now().timestamp())
+        exp = Experience(
+            id=exp_id,
+            situation=situation,
+            action=action,
+            outcome=outcome,
+        )
+        self._experiences.append(exp)
+        return exp_id
+
+    async def retrieve_similar(self, situation: dict[str, Any], limit: int = 5) -> list[Experience]:
+        """Retrieve similar experiences.
 
         Args:
-            experiences: Past experiences
+            situation: Situation to match
+            limit: Maximum results
 
         Returns:
-            Analysis results
+            Similar experiences
         """
-        raise NotImplementedError("Will be implemented in Phase 9")
+        results = []
+        for exp in reversed(self._experiences):
+            if self._matches_situation(situation, exp.situation):
+                results.append(exp)
+                if len(results) >= limit:
+                    break
+        return results
 
-    async def learn(self, dataset: Dataset) -> dict[str, Any]:
-        """Learn from dataset.
-
-        Args:
-            dataset: Dataset to learn from
-
-        Returns:
-            Learning results
-        """
-        raise NotImplementedError("Will be implemented in Phase 9")
-
-    async def get_metrics(self) -> LearningMetrics:
-        """Get learning metrics.
-
-        Returns:
-            Learning metrics
-        """
-        raise NotImplementedError("Will be implemented in Phase 9")
+    def _matches_situation(self, s1: dict[str, Any], s2: dict[str, Any]) -> bool:
+        """Check if situations match."""
+        return any(s1.get(k) == s2.get(k) for k in s1 if k in s2)
 
 
-class IExperienceLearningService(ILearningService):
-    """Experience Learning Service interface.
+class HeuristicLearningService:
+    """Heuristic Learning Service.
 
-    See SERVICE-610 for full specification.
+    Focuses on learning and refining heuristics.
     """
 
-    async def extract_patterns(
-        self,
-        experiences: list[Experience],
-    ) -> list[dict[str, Any]]:
-        """Extract patterns from experiences.
+    def __init__(self) -> None:
+        """Initialize the heuristic learner."""
+        self._heuristics: dict[str, float] = {}
+
+    async def update_heuristic(self, heuristic: str, feedback: float) -> None:
+        """Update a heuristic based on feedback.
 
         Args:
-            experiences: Experiences to analyze
+            heuristic: Heuristic identifier
+            feedback: Feedback value
+        """
+        current = self._heuristics.get(heuristic, 0.5)
+        learning_rate = 0.1
+        self._heuristics[heuristic] = current + learning_rate * (feedback - current)
+
+    async def get_heuristic(self, heuristic: str) -> float:
+        """Get heuristic value.
+
+        Args:
+            heuristic: Heuristic identifier
 
         Returns:
-            Extracted patterns
+            Heuristic value
         """
-        raise NotImplementedError("Will be implemented in Phase 9")
+        return self._heuristics.get(heuristic, 0.5)
 
 
-class IHeuristicLearningService(ILearningService):
-    """Heuristic Learning Service interface.
+class PolicyLearningService:
+    """Policy Learning Service.
 
-    See SERVICE-620 for full specification.
+    Focuses on policy improvement.
     """
 
-    async def refine_heuristics(
-        self,
-        experiences: list[Experience],
-    ) -> list[dict[str, Any]]:
-        """Refine heuristics.
+    def __init__(self) -> None:
+        """Initialize the policy learner."""
+        self._policies: dict[str, dict[str, float]] = {}
+
+    async def update_policy(self, state: str, action: str, value: float) -> None:
+        """Update policy value.
 
         Args:
-            experiences: Experiences to learn from
-
-        Returns:
-            Refined heuristics
+            state: State identifier
+            action: Action identifier
+            value: Value to update
         """
-        raise NotImplementedError("Will be implemented in Phase 9")
+        if state not in self._policies:
+            self._policies[state] = {}
+        self._policies[state][action] = value
 
-
-class IPolicyLearningService(ILearningService):
-    """Policy Learning Service interface.
-
-    See SERVICE-630 for full specification.
-    """
-
-    async def improve_policy(
-        self,
-        experiences: list[Experience],
-        policy_id: str,
-    ) -> dict[str, Any]:
-        """Improve a policy.
+    async def get_best_action(self, state: str) -> str | None:
+        """Get best action for state.
 
         Args:
-            experiences: Learning experiences
-            policy_id: Policy to improve
+            state: State identifier
 
         Returns:
-            Improved policy
+            Best action or None
         """
-        raise NotImplementedError("Will be implemented in Phase 9")
+        state_policy = self._policies.get(state, {})
+        if not state_policy:
+            return None
+
+        return max(state_policy, key=state_policy.get)
+
+
+# Re-export interfaces
+ILearningService = LearningService
+IExperienceLearningService = ExperienceLearningService
+IHeuristicLearningService = HeuristicLearningService
+IPolicyLearningService = PolicyLearningService

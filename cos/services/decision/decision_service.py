@@ -1,139 +1,205 @@
-"""Decision Service Interfaces.
+"""Decision Services Implementation.
 
-This module defines interfaces for decision services.
+This module provides decision services for alternative selection.
 """
 
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
-
-from cos.services.base import IService
-
-if TYPE_CHECKING:
-    from cos.shared.models import Decision, Plan, Policy
+from dataclasses import dataclass
+from typing import Any
 
 
-class IDecisionService(IService):
-    """Decision Service interface.
+@dataclass
+class DecisionOption:
+    """Represents a decision option."""
 
-    Base interface for decision service implementations.
-    Services include: Utility, Policy, Risk decision engines.
+    id: str
+    name: str
+    utility: float = 0.0
+    risk: float = 0.0
 
-    See SERVICE-500 for base specification.
+
+class DecisionService:
+    """Decision Service for alternative selection.
+
+    Provides decision-making capabilities.
     """
 
-    async def select_plan(self, plans: list[Plan]) -> Decision:
-        """Select the best plan.
+    def __init__(self) -> None:
+        """Initialize the decision service."""
+        self._decisions: list[dict[str, Any]] = []
+
+    async def decide(self, context: Any) -> dict[str, Any]:
+        """Make a decision.
 
         Args:
-            plans: Candidate plans
+            context: Decision context
 
         Returns:
-            Selected decision
+            Decision result
         """
-        raise NotImplementedError("Will be implemented in Phase 8")
+        context_dict = context.model_dump() if hasattr(context, "model_dump") else (
+            context if isinstance(context, dict) else {"context": str(context)}
+        )
 
-    async def evaluate_plan(self, plan: Plan) -> dict[str, Any]:
-        """Evaluate a plan.
+        alternatives = context_dict.get("alternatives", [])
+        criteria = context_dict.get("criteria", ["utility"])
 
-        Args:
-            plan: Plan to evaluate
+        best = None
+        best_score = float("-inf")
+
+        for alt in alternatives:
+            score = self._calculate_score(alt, criteria)
+            if score > best_score:
+                best_score = score
+                best = alt
+
+        decision = {
+            "chosen": best,
+            "score": best_score,
+            "alternatives_considered": len(alternatives),
+        }
+        self._decisions.append(decision)
+
+        return decision
+
+    def _calculate_score(self, option: dict[str, Any], criteria: list[str]) -> float:
+        """Calculate option score."""
+        score = 0.0
+        if "utility" in criteria:
+            score += option.get("utility", 0.5)
+        if "risk" in criteria:
+            score -= option.get("risk", 0.0) * 0.5
+        return score
+
+    async def get_history(self) -> list[dict[str, Any]]:
+        """Get decision history.
 
         Returns:
-            Evaluation results
+            Decision history
         """
-        raise NotImplementedError("Will be implemented in Phase 8")
+        return self._decisions.copy()
 
 
-class IUtilityDecisionService(IDecisionService):
-    """Utility Decision Service interface.
+class UtilityDecisionService:
+    """Utility-Based Decision Service.
 
-    See SERVICE-510 for full specification.
+    Uses utility theory for decisions.
     """
 
-    async def calculate_utility(self, plan: Plan) -> float:
-        """Calculate plan utility.
+    def __init__(self) -> None:
+        """Initialize the utility decision service."""
+        self._utilities: dict[str, float] = {}
+
+    async def compute_utility(self, option: dict[str, Any]) -> float:
+        """Compute utility of an option.
 
         Args:
-            plan: Plan to evaluate
+            option: Option to evaluate
 
         Returns:
-            Utility score
+            Utility value
         """
-        raise NotImplementedError("Will be implemented in Phase 8")
+        weights = option.get("attributes", {})
+        utility = sum(weights.values()) / max(len(weights), 1)
+        return utility
 
-    async def compare_utilities(
-        self,
-        plan_a: Plan,
-        plan_b: Plan,
-    ) -> Plan:
-        """Compare utilities of two plans.
+    async def select_best(self, options: list[dict[str, Any]]) -> dict[str, Any]:
+        """Select best option.
 
         Args:
-            plan_a: First plan
-            plan_b: Second plan
+            options: Options to evaluate
 
         Returns:
-            Plan with higher utility
+            Best option
         """
-        raise NotImplementedError("Will be implemented in Phase 8")
+        if not options:
+            return {}
+
+        utilities = [(opt, await self.compute_utility(opt)) for opt in options]
+        utilities.sort(key=lambda x: x[1], reverse=True)
+        return utilities[0][0]
 
 
-class IPolicyEngineService(IDecisionService):
-    """Policy Engine Service interface.
+class PolicyEngineService:
+    """Policy Engine Service.
 
-    See SERVICE-520 for full specification.
+    Provides policy-based decisions.
     """
 
-    async def evaluate_policy(
-        self,
-        plan: Plan,
-        policy: Policy,
-    ) -> bool:
-        """Evaluate a plan against policy.
+    def __init__(self) -> None:
+        """Initialize the policy engine."""
+        self._policies: list[dict[str, Any]] = []
 
-        Args:
-            plan: Plan to evaluate
-            policy: Policy to check
-
-        Returns:
-            True if compliant
-        """
-        raise NotImplementedError("Will be implemented in Phase 8")
-
-    async def add_policy(self, policy: Policy) -> None:
+    async def add_policy(self, policy: dict[str, Any]) -> None:
         """Add a policy.
 
         Args:
             policy: Policy to add
         """
-        raise NotImplementedError("Will be implemented in Phase 8")
+        self._policies.append(policy)
+
+    async def evaluate(self, situation: dict[str, Any]) -> dict[str, Any]:
+        """Evaluate situation against policies.
+
+        Args:
+            situation: Situation to evaluate
+
+        Returns:
+            Evaluation result
+        """
+        for policy in self._policies:
+            if self._matches_situation(situation, policy):
+                return {
+                    "policy_matched": policy.get("name"),
+                    "action": policy.get("action"),
+                }
+
+        return {"policy_matched": None, "action": "default"}
+
+    def _matches_situation(self, situation: dict[str, Any], policy: dict[str, Any]) -> bool:
+        """Check if situation matches policy."""
+        conditions = policy.get("conditions", {})
+        for key, value in conditions.items():
+            if situation.get(key) != value:
+                return False
+        return True
 
 
-class IRiskAssessmentService(IDecisionService):
-    """Risk Assessment Service interface.
+class RiskAssessmentService:
+    """Risk Assessment Service.
 
-    See SERVICE-530 for full specification.
+    Provides risk evaluation.
     """
 
-    async def assess_risk(self, plan: Plan) -> float:
-        """Assess plan risk.
+    def __init__(self) -> None:
+        """Initialize the risk assessor."""
+        self._risk_factors: dict[str, float] = {}
+
+    async def assess(self, option: dict[str, Any]) -> dict[str, Any]:
+        """Assess risk of an option.
 
         Args:
-            plan: Plan to assess
+            option: Option to assess
 
         Returns:
-            Risk score
+            Risk assessment
         """
-        raise NotImplementedError("Will be implemented in Phase 8")
+        likelihood = option.get("likelihood", 0.5)
+        impact = option.get("impact", 0.5)
 
-    async def identify_risks(self, plan: Plan) -> list[dict[str, Any]]:
-        """Identify plan risks.
+        risk_score = likelihood * impact
 
-        Args:
-            plan: Plan to check
+        return {
+            "risk_score": risk_score,
+            "likelihood": likelihood,
+            "impact": impact,
+            "level": "high" if risk_score > 0.6 else "medium" if risk_score > 0.3 else "low",
+        }
 
-        Returns:
-            Identified risks
-        """
-        raise NotImplementedError("Will be implemented in Phase 8")
+
+# Re-export interfaces
+IDecisionService = DecisionService
+IUtilityDecisionService = UtilityDecisionService
+IPolicyEngineService = PolicyEngineService
+IRiskAssessmentService = RiskAssessmentService
