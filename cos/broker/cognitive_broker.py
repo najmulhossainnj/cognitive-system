@@ -733,6 +733,9 @@ class CognitiveBroker:
 
         # Initialize services
         await self._reasoning_service.initialize()
+        
+        # Wire up learning service to reasoning for self-improvement
+        self._reasoning_service.set_learning_service(self._learning)
 
         # Create capabilities
         self._reasoning = ReasoningCapability(self._reasoning_service)
