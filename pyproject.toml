@@ -1,0 +1,145 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cos"
+dynamic = ["version"]
+description = "Cognitive Operating System - A reusable cognitive architecture"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "COS Team", email = "cos@example.com" }
+]
+keywords = [
+    "cognitive",
+    "reasoning",
+    "ai",
+    "artificial-intelligence",
+    "arc",
+    "neurosymbolic",
+]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.3.0",
+    "mypy>=1.8.0",
+    "pre-commit>=3.6.0",
+    "hatch>=1.9.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.24.0",
+]
+arc = [
+    "numpy>=1.26.0",
+    "scipy>=1.12.0",
+]
+graph = [
+    "networkx>=3.2.0",
+]
+vector = [
+    "numpy>=1.26.0",
+    "scikit-learn>=1.4.0",
+]
+llm = [
+    "openai>=1.12.0",
+    "anthropic>=0.18.0",
+]
+all = [
+    "cos[dev,docs,arc,graph,vector,llm]",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/cos"
+Documentation = "https://cos.readthedocs.io"
+Repository = "https://github.com/your-org/cos"
+Issues = "https://github.com/your-org/cos/issues"
+Changelog = "https://github.com/your-org/cos/blob/main/CHANGELOG.md"
+
+[project.scripts]
+cos = "cos.cli:main"
+
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "0.1.0"
+
+[tool.hatch.build.targets.wheel]
+packages = ["cos"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/cos",
+    "/docs",
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "performance: Performance tests",
+    "regression: Regression tests",
+    "acceptance: Acceptance tests",
+    "slow: Slow running tests",
+]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["cos"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@abstractmethod",
+]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+exclude = ["tests", "docs"]
+
+[[tool.mypy.overrides]]
+module = "pydantic.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pytest.*"
+ignore_missing_imports = true

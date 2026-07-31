@@ -1,0 +1,150 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality Assurance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Run ruff check
+        run: uv run ruff check .
+
+      - name: Run ruff format check
+        run: uv run ruff format --check .
+
+      - name: Run mypy
+        run: uv run mypy cos
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+        test-type: [unit, integration]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Run tests
+        run: uv run pytest tests/${{ matrix.test-type }}/ -v --cov=cos --cov-report=xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install docs dependencies
+        run: uv sync --docs
+
+      - name: Check documentation build
+        run: uv run mkdocs build --strict
+
+  lint-docs:
+    name: Lint Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Check docs links
+        run: |
+          uv run markdownlint-cli2 "docs/**/*.md" || true
+
+  build:
+    name: Build Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install build
+        run: uv pip install build
+
+      - name: Build package
+        run: python -m build
+
+      - name: Check package
+        run: |
+          uv pip install dist/*.whl --force-reinstall
+          python -c "import cos; print(cos.__version__)"
+
+  all-checks:
+    name: All Checks Passed
+    needs: [quality, test, docs, lint-docs, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All checks passed
+        run: echo "All CI checks passed successfully!"
