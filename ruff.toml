@@ -1,0 +1,46 @@
+# COS Ruff Configuration
+# Cognitive Operating System - Linting and Formatting
+
+line-length = 100
+target-version = "py311"
+
+[lint]
+# Enable ruff's linter
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "C",     # flake8-comprehensions
+    "B",     # flake8-bugbear
+    "UP",    # pyupgrade
+    "RUF",   # ruff-specific rules
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+    "C901",   # too complex
+    "UP007",  # Use X | Y for union types (Python 3.10+)
+]
+
+[lint.isort]
+# Force import sorting to match our architecture
+known-first-party = ["cos"]
+force-single-line = false
+order-by-type = false
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401", "I001"]
+"tests/*" = ["F401", "I001", "B011"]
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.pyupgrade]
+keep-runtime-typing = true
+
+[format]
+# Use ruff for formatting
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
